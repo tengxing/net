@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>d3_5.html</title>
+	<style type="text/css">
+		.node circle {
+		  cursor: pointer;
+		  stroke: #3182bd;
+		  stroke-width: 1.5px;
+		}
+
+		.node text {
+		  font: 10px sans-serif;
+		  pointer-events: none;
+		  text-anchor: middle;
+		}
+
+		line.link {
+		  fill: none;
+		  stroke: #9ecae1;
+		  stroke-width: 1.5px;
+		}
+	</style>
+</head>
+<body>
+	<!-- <script src="//d3js.org/d3.v4.min.js"></script> -->
+	<script src="//d3js.org/d3.v3.min.js"></script>
+	<script type="text/javascript">
+      function zoomed() {
+      	d3.select(this).attr("transform", 
+        "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")"
+        ); 
+      }
+
+    
+
+	//颜色
+	function color(t){
+		return "red";
+	}
+
+	function dragstarted(d) {
+	  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+	  d.fx = d.x;
+	  d.fy = d.y;
+	}
+
+	function dragged(d) {
+	  d.fx = d3.event.x;
+	  d.fy = d3.event.y;
+	}
+
+	function dragended(d) {
+	  if (!d3.event.active) simulation.alphaTarget(0);
+	  d.fx = null;
+	  d.fy = null;
+	}
+
+	</script>
+	<script>
+		//定义全局变量
+		var width = 1800,
+			height = 960,
+			nodes,
+			links;
+
+		//svg缩放(要提前加载)
+		var zoom = d3.behavior.zoom()
+          .scaleExtent([-5, 20])
+          .on("zoom", zoomed);
+
+		//新建svg元素
+		var svg = d3.select("body").append("svg")
+								   .attr("width",width)
+								   .attr("height",height)
+								   .call(zoom);
+
+		//分组node和link
+		var link = svg.append("g").attr("class", "edge").call(zoom),
+			node = svg.append("g").attr("class", "node").call(zoom);
+
+		//预初始化
+		var force = d3.layout.force()
+		    .linkDistance(20)
+		    .charge(-120) 
+		    .size([width, height]);
+		
+		/*svg.append("circle").attr("cx",50)
+							.attr("cy",50)
+							.attr("r",10)
+							.attr("fill","red")
+							.call(zoom);*/
+		//获取数据
+		d3.json("dd.json", function(error, data) {
+  			if (error) throw error;
+  			//分别获取nodes links
+  			links = data.edges;
+  			nodes = data.nodes;
+  			update();
+
+		});
+		function update(){
+			
+			
+      		console.log(links);
+			
+	      	// Restart the force layout.
+	  		force.nodes(nodes)
+	  			.links(links)
+	      		.start();
+				
+
+			
+			//alert();
+
+			link.selectAll("line")
+				.data(links)
+				.enter().append("line");
+				/*.attr("stroke", function(d) { return d.color; })
+				.attr("stroke-width", function(d) { return d.size; })*/
+
+			node.selectAll("circle")
+		    	.data(nodes)
+		    	.enter().append("circle")
+		    	.attr("cx",function(d) { return d.x})
+		    	.attr("cy",function(d) { return d.y})
+		       	.attr("r", function(d) { return d.size})
+		      	.attr("fill", function(d) { return d.color; })
+		      	.call(force.drag);
+
+
+
+
+
+
+
+			force.on("tick", function(){ //对于每一个时间间隔
+			    //更新连线坐标
+			    link.attr("x1",function(d){ return d.source.x; })
+			        .attr("y1",function(d){ return d.source.y; })
+			        .attr("x2",function(d){ return d.target.x; })
+			        .attr("y2",function(d){ return d.target.y; });
+			 
+			    //更新节点坐标
+			    node.attr("cx",function(d){ return d.x; })
+			        .attr("cy",function(d){ return d.y; });
+			 
+			    //更新文字坐标
+			    /*svg_texts.attr("x", function(d){ return d.x; })
+			       .attr("y", function(d){ return d.y; });*/
+			 });
+		}
+	</script>
+
+</body>
+</html>

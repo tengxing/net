@@ -25,8 +25,8 @@ line.link {
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-var width = 960,
-    height = 500,
+var width = 1450,
+    height = 760,
     root;
 
 var force = d3.layout.force()
@@ -39,9 +39,19 @@ var force = d3.layout.force()
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
+var zoom = d3.behavior.zoom()
+          .scaleExtent([1, 10])
+          .on("zoom", zoomed);
+      function zoomed() {
+      d3.select(this).attr("transform", 
+        "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
 
-var link = svg.selectAll(".link"),
-    node = svg.selectAll(".node");
+var group = svg.append("g");
+                
+
+var link = group.selectAll("link"),
+    node = group.selectAll("node");
 
 d3.json("graph.json", function(error, json) {
   if (error) throw error;
@@ -65,7 +75,7 @@ function update() {
 
   link.exit().remove();
 
-  link.enter().insert("line", ".node")
+  link.enter().insert("line", "node")
       .attr("class", "link");
 
   // Update nodes.
@@ -136,6 +146,13 @@ function flatten(root) {
   return nodes;
 }
 
+var zoom = d3.behavior.zoom()
+          .scaleExtent([1, 10])
+          .on("zoom", zoomed);
+      function zoomed() {
+      d3.select(this).attr("transform", 
+        "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
 </script>
 </body>
 </html>

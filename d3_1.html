@@ -4,9 +4,8 @@
 	<title></title>
 	<style>
 		.sigma{
-			margin-top:100px;
-			margin-left: 400px; 
-			width: 1024px;
+			margin:10px,20px;
+			width: 1980px;
 			height: 900px
 		}
 	</style>
@@ -17,63 +16,84 @@
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript">
 var svg = d3.select("svg")
-var width = 900,
-    height = 900,
-    root;
-var nodes = [ { name: "桂林" }, { name: "广州" },
-              { name: "厦门" }, { name: "杭州" },
-              { name: "上海" }, { name: "青岛" },
-              { name: "天津" } ];
- 
- var edges = [ { source : 0 , target: 1 } , { source : 0 , target: 2 } ,
+var width = 1500,
+    height = 600,
+    nodes,
+    edges;
+var nodess = [ 
+		{ name: "特别行政区" }, { name: "中国" },
+        { name: "香港" }, { name: "澳门" },
+        { name: "经济特区" }, { name: "直辖市" },
+        { name: "普通省市" }
+ ];
+ var edgess = [ { source : 0 , target: 1 } , { source : 0 , target: 2 } ,
                { source : 0 , target: 3 } , { source : 1 , target: 4 } ,
                { source : 1 , target: 5 } , { source : 1 , target: 6 } ]; 
 
- var force = d3.layout.force()
+
+d3.json("dd.json", function(error, data) {
+  if (error) {
+  	console.log(error);
+  } else {
+  	//nodes = data.nodes;
+  	//edges = data.edges;
+
+  	console.log(edges)
+  	nodes = data.nodes;
+  	edges = data.edges;
+  	update();
+	}
+});
+
+var zoom = d3.behavior.zoom()
+          .scaleExtent([-5, 10])
+          .on("zoom", zoomed);
+      function zoomed() {
+      d3.select(this).attr("transform", 
+        "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+
+function update(){
+	var force = d3.layout.force()
        .nodes(nodes) //指定节点数组
       .links(edges) //指定连线数组
       .size([width,height]) //指定作用域范围
       .linkDistance(250) //指定连线长度
       .charge([-600]) //相互之间的作用力
       .gravity(.05); // 引力
-
 force.start();    //开始作用
-console.log(nodes);
-console.log(edges);
-
-//添加连线 
- var svg_edges = svg.selectAll("line")
-     .data(edges)
-     .enter()
-     .append("line")
-     .style("stroke","#ccc")
-     .style("stroke-width",1);
- 
- var color = d3.scale.category20();
- 
- //添加节点 
- var svg_nodes = svg.selectAll("circle")
-     .data(nodes)
-     .enter()
-     .append("circle")
-     .attr("r",30)
-     .style("fill",function(d,i){
-         return color(i);
-     })
-     .on("click", click) //点击收起子节点
-     .call(force.drag);  //使得节点能够拖动
- 
- //添加描述节点的文字
- var svg_texts = svg.selectAll("text")
-     .data(nodes)
-     .enter()
-     .append("text")
-     .style("fill", "black")
-     .attr("dx", 50)
-     .attr("dy", 8)
-     .text(function(d){
-        return d.name;
-     });
+ //添加连线 
+	 var svg_edges = svg.selectAll("line")
+	     .data(edges)
+	     .enter()
+	     .append("line")
+	     .style("stroke","#ccc")
+	     .style("stroke-width",1);
+	 
+	 var color = d3.scale.category20();
+	 
+	 //添加节点 
+	 var svg_nodes = svg.append("g").call(zoom).call(force.drag).selectAll("circle")
+	     .data(nodes)
+	     .enter().append("circle")
+		 .attr("cx",function(d) { return d.x})
+	   	 .attr("cy",function(d) { return d.y})
+       	 .attr("r", function(d) { return d.size})
+		 .attr("fill", function(d) { return d.color; })
+	     .on("click", click) //点击收起子节点
+	     .call(force.drag);  //使得节点能够拖动
+	 
+	 //添加描述节点的文字
+	 var svg_texts = svg.selectAll("text")
+	     .data(nodes)
+	     .enter()
+	     .append("text")
+	     .style("fill", "black")
+	     .attr("dx", 50)
+	     .attr("dy", 8)
+	     .text(function(d){
+	        return d.name;
+	});
 
  force.on("tick", function(){ //对于每一个时间间隔
     //更新连线坐标
@@ -94,14 +114,18 @@ console.log(edges);
  // Toggle children on click.
 function click(d) {
   if (d3.event.defaultPrevented) return; // ignore drag
-  if (d.children) {
+  alert(d.nodeType)
+  if (d.siblings) {
+  	alert("存在")
     d._children = d.children;
     d.children = null;
   } else {
-  	alert()
+  	alert("不存在")
     d.children = d._children;
     d._children = null;
   }
+}
+
   //update();
 }
 </script>

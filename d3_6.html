@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript">
+
+d3.json("data.json", function(error, data) {
+  			if (error) throw error;
+  	var w = 1400;  
+	var h = 500;  
+	var svg = d3.select("body")  
+  .append("svg")  
+  .attr("width", w)          //设置宽度  
+  .attr("height", h);        //设置高度  
+	var force = d3.layout.force()  //转换数据的方法，将点转换为坐标格式  
+						.nodes(data.nodes)          //传入点  
+						.links(data.edges)          //传入边  
+						.size([500, 500])                  //设置图形宽高  
+						.linkDistance([50]) // 节点连线长度  
+						.charge([-100]) //    排斥力  
+						.start();  
+
+	var edges = svg.selectAll("line")  
+					.data(data.edges)  
+					.enter()  
+					.append("line")  
+					.style("stroke", "#ccc")  
+					.style("stroke-width", 1);  
+
+	var nodes = svg.selectAll("circle")  
+					.data(data.nodes)  
+					.enter()  
+					.append("circle")  
+					.attr("r", 10)  
+					.style("fill", function(d, i) {  
+						return "green";  
+					})  
+					.call(force.drag);    //增加拖动效果，拉动节点 
+
+	force.on("tick", function() {  
+		edges.attr("x1", function(d) { return d.source.x; })  
+		     .attr("y1", function(d) { return d.source.y; })  
+		     .attr("x2", function(d) { return d.target.x; })  
+		     .attr("y2", function(d) { return d.target.y; });  
+		  
+		nodes.attr("cx", function(d) { return d.x; })  
+		     .attr("cy", function(d) { return d.y; });  
+});   
+
+});
+</script>
+</body>
+</html>
