@@ -3,7 +3,7 @@
     {
       "label":"primary authorities for oil spills",
       "x":815.6617431640625,"y":765.8595581054688,
-      "id":"111",
+      "id":"110",
       "attributes":{"加权度":"5.0","Modularity Class":"307",
       "Eccentricity":"3.0",
       "Authority":"0.0","度":"5",
@@ -28,8 +28,8 @@
   "edges": [
     {
 			"label":"include",
-			"source":"111",
-			"target":"571",
+			"source":111,
+			"target":571,
 			"id":"1765",
 			"attributes":{"predicate (-\u003e)":"include"},
 			"color":"rgb(35,34,251)",
@@ -37,8 +37,8 @@
 		},
 		{
 			"label":"shares",
-			"source":"111",
-			"target":"690",
+			"source":110,
+			"target":690,
 			"id":"491",
 			"attributes":{"predicate (-\u003e)":"shares"},
 			"color":"rgb(35,34,251)",

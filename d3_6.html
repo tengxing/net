@@ -14,7 +14,19 @@ d3.json("data.json", function(error, data) {
 	var svg = d3.select("body")  
   .append("svg")  
   .attr("width", w)          //设置宽度  
-  .attr("height", h);        //设置高度  
+  .attr("height", h);        //设置高度 
+
+
+
+  var zoom = d3.behavior.zoom()
+          .scaleExtent([-5, 10])
+          .on("zoom", zoomed);
+      function zoomed() {
+      d3.select(this).attr("transform", 
+        "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+
+ 
 	var force = d3.layout.force()  //转换数据的方法，将点转换为坐标格式  
 						.nodes(data.nodes)          //传入点  
 						.links(data.edges)          //传入边  
@@ -28,17 +40,21 @@ d3.json("data.json", function(error, data) {
 					.enter()  
 					.append("line")  
 					.style("stroke", "#ccc")  
-					.style("stroke-width", 1);  
+					.style("stroke-width", 1)
+					.call(zoom);  
 
 	var nodes = svg.selectAll("circle")  
 					.data(data.nodes)  
 					.enter()  
 					.append("circle")  
-					.attr("r", 10)  
-					.style("fill", function(d, i) {  
-						return "green";  
+					.attr("r", function(d) {  
+						return d.size;  
+					})    
+					.style("fill", function(d) {  
+						return d.color;  
 					})  
-					.call(force.drag);    //增加拖动效果，拉动节点 
+					.call(force.drag)
+					.call(zoom);    //增加拖动效果，拉动节点 
 
 	force.on("tick", function() {  
 		edges.attr("x1", function(d) { return d.source.x; })  

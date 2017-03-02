@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<a target="_blank" style="outline:none;"><canvas width="1960" height="960" ></canvas></a>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var canvas = document.querySelector("canvas"),
+    context = canvas.getContext("2d"),
+    width = canvas.width,
+    height = canvas.height,
+    searchRadius = 40;
+
+var color = d3.scaleOrdinal() //创建一个序数比例尺。
+              .range(d3.schemeCategory20);//20种分类颜色
+
+
+
+
+/*
+力导向图
+d3.forceSimulation - 创建一个力模拟。
+simulation.restart - 重启力模拟。
+simulation.stop - 停止力模拟。
+simulation.tick - 将力模拟向前推进一步。
+simulation.nodes - 设置力模拟的节点。
+simulation.alpha - 设置当前的α值。
+simulation.alphaMin -设置α最小阈值。
+simulation.alphaDecay - 设置α指数衰减率。
+simulation.alphaTarget - 设置目标α。
+simulation.drag - 设置曳引系数。
+simulation.force - 添加或移除力。
+simulation.fix - 固定节点位置。
+simulation.unfix - 释放固定的节点。
+simulation.find - 查找给定位置最近的节点。
+simulation.on - 添加或移除事件监听器。
+force - 应用力模拟。
+force.initialize - 使用给定的节点初始化力布局。
+d3.forceCenter - 创建一个力中心。
+center.x - 设置中心的x-坐标。
+center.y - 设置中心的y-坐标。
+d3.forceCollide - 创建一个圆碰撞力。
+collide.radius - 设置圆的半径。
+collide.strength - 设置碰撞检测强度。
+collide.iterations - 设置迭代次数。
+d3.forceLink - 创建连接力。
+link.links - 设置连接数组。
+link.id - 连接数组。
+link.distance - 设置连接距离。
+link.strength - 设置连接强度。
+link.iterations - 设置迭代次数。
+d3.forceManyBody - 创建多体力。
+manyBody.strength - 设置力强度。
+manyBody.theta - 设置Barnes-Hut近似精度。
+manyBody.distanceMin - 当节点关闭限制力。
+manyBody.distanceMax - 当节点太远限制力。
+d3.forceX - 创建x-定位力。
+x.strength - 设置力强度。
+x.x - 设置目标x-坐标。
+d3.forceY - 创建y-定位力。
+y.strength - 设置力强度。
+y.y - 设置目标y-坐标。
+*/
+var simulation = d3.forceSimulation()
+    .force("charge", d3.forceManyBody().strength(-18))
+    .force("link", d3.forceLink().iterations(4).id(function(d) { return d.id; }))
+    .force("x", d3.forceX())
+    .force("y", d3.forceY());
+
+d3.json("dd.json", function(error, graph) {
+  if (error) throw error;
+
+  /* 嵌套
+  nest.key - 在嵌套层级中加一级。
+  nest.sortKeys - 当前层级按键排序。
+  nest.sortValues - 叶子层级按值排序。
+  nest.rollup -为叶子层指定汇总函数。
+  nest.map - 生成一个嵌套，返回一个map。
+  nest.object - 生成一个嵌套，返回一个关联数组。
+  nest.entries - 生成一个嵌套，返回一个键值对数组。*/
+  var users = d3.nest()
+      .key(function(d) { return d.user; })
+      .entries(graph.nodes);
+      //.sort(function(a, b) { return b.values.length - a.values.length; });
+
+ // color.domain(users.map(function(d) { return d.user; }));
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.edges);
+  //添加效果
+  d3.select(canvas)
+      .on("mousemove", mousemoved)
+      .call(d3.drag()
+          .container(canvas)
+          .subject(dragsubject)
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended))
+      .call(d3.zoom()
+          .scaleExtent([1 / 2, 1])
+          .on("zoom", zoomed))
+      .call(render);
+  function zoomed() {
+  transform = d3.event.transform;
+  render();
+}
+
+  function ticked() {
+    context.clearRect(0, 0, width, height);
+    context.save();
+    context.translate(width / 2, height / 2);
+
+    context.beginPath();
+    graph.links.forEach(drawLink);
+    context.strokeStyle = "#aaa";
+    context.stroke();
+
+    users.forEach(function(user) {
+      context.beginPath();
+      user.values.forEach(drawNode);
+      context.fillStyle = color(user.key);
+      context.fill();
+    });
+
+    context.restore();
+  }
+
+  function render() {
+  context.save();
+  context.clearRect(0, 0, width, height);
+  context.beginPath();
+  context.translate(transform.x, transform.y);
+  context.scale(transform.k, transform.k);
+  points.forEach(drawPoint);
+  context.fill();
+  context.restore();
+}
+
+  function dragsubject() {
+    return simulation.find(d3.event.x - width / 2, d3.event.y - height / 2, searchRadius);
+  }
+
+  function mousemoved() {
+    var a = this.parentNode, m = d3.mouse(this), d = simulation.find(m[0] - width / 2, m[1] - height / 2, searchRadius);
+    if (!d) return a.removeAttribute("href"), a.removeAttribute("title");
+    a.setAttribute("href", "http://bl.ocks.org/" + (d.user ? d.user + "/" : "") + d.id);
+    a.setAttribute("title", d.id + (d.user ? " by " + d.user : "") + (d.description ? "\n" + d.description : ""));
+  }
+});
+
+
+
+function dragstarted() {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d3.event.subject.fx = d3.event.subject.x;
+  d3.event.subject.fy = d3.event.subject.y;
+}
+
+function dragged() {
+  d3.event.subject.fx = d3.event.x;
+  d3.event.subject.fy = d3.event.y;
+}
+
+function dragended() {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d3.event.subject.fx = null;
+  d3.event.subject.fy = null;
+}
+
+function drawLink(d) {
+  context.moveTo(d.source.x, d.source.y);
+  context.lineTo(d.target.x, d.target.y);
+}
+
+function drawNode(d) {
+  context.moveTo(d.x + 3, d.y);
+  context.arc(d.x, d.y, 3, 0, 2 * Math.PI);
+}
+
+</script>
