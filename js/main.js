@@ -15,14 +15,13 @@ function GetQueryStringParams(sParam,defaultVal) {
             return sParameterName[1];
         }
     }
-    alert()
     return defaultVal;
 }
 
 
 jQuery.getJSON(GetQueryStringParams("config","config.json"), function(data, textStatus, jqXHR) {
 	config=data;
-	
+	console.log(config);
 	if (config.type!="network") {
 		//bad config
 		alert("Invalid configuration settings.")
@@ -45,6 +44,7 @@ Object.size = function(obj) {
 };
 
 function initSigma(config) {
+     console.info(2)
 	var data=config.data
 	
 	var drawProps, graphProps,mouseProps;
@@ -121,6 +121,7 @@ function initSigma(config) {
 
 
 function setupGUI(config) {
+    console.info(1)
 	// Initialise main interface elements
 	var logo=""; // Logo elements
 	if (config.logo.file) {

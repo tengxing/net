@@ -23,6 +23,7 @@ d3.json("dd.json", function(error, data) {
   if (error) throw error;
   graph = data
   
+ simulation.alpha(0.01);
 
  simulation
       .nodes(graph.nodes)
@@ -37,7 +38,7 @@ d3.json("dd.json", function(error, data) {
     .attr("stroke",function (d) { return d.color; })
     .attr("stroke-width", function(d) { return d.size; })
     .call(d3.zoom()
-        .scaleExtent([-5, 2])
+        .scaleExtent([0, 2])
         .on("zoom", zoomed));
 
   var node = g.selectAll("circle")
@@ -51,13 +52,13 @@ d3.json("dd.json", function(error, data) {
       .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
-          .on("end", dragended))
+          .on("end", dragended)) 
       .call(d3.zoom()
         .scaleExtent([-5, 2])
         .on("zoom", zoomed));
 
   node.append("title")
-      .text(function(d) { return d.id; });
+      .text(function(d) { return d.label; });
 
 
   function ticked() {
@@ -74,9 +75,15 @@ d3.json("dd.json", function(error, data) {
 
 });
 
-svg.call(d3.zoom()
-    .scaleExtent([-5, 2])
-    .on("zoom", zoomed));
+svg.call(d3.zoom().filter(function filter() {
+  return d3.zoom().scaleTo(0.1);
+}))
+   .call(d3.zoom().scaleExtent([0.1, 2])
+      .on("zoom", zoomed));
+
+function filter() {
+  return this.scaleTo(0.1);
+}
 
 function zoomed() {
   g.attr("transform", d3.event.transform);
