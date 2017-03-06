@@ -2,6 +2,7 @@
 <meta charset="utf-8">
 <svg width="1800" height="900"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js"></script>
 <script>
 
 var svg = d3.select("svg"),
@@ -107,6 +108,46 @@ function dragended(d) {
 }
 
 function click(d) {
+   var nodes = eval(graph.nodes);
+   var edges = eval(graph.edges);
+   var source,target;
+   var neighbors = {};
+   neighbors[d.id] = 1;
+            $(nodes).each(function(index) {
+                var val = nodes[index];
+                if (val.id==d.id) {
+                  alert("ok")
+                    /*$(val.summary).each(function(ind) {
+                        alert(val.Title + " " + val.Content + " " + val.summary[ind].sum0);
+                    });*/
+                } else {
+                   
+                }
+            });
+             $(edges).each(function(index) {
+                var val = edges[index];
+                if (val.source.id==d.id) { 
+                  neighbors[val.target.id] = 1;
+                  //alert(neighbors.length);
+                    /*$(val.summary).each(function(ind) {
+                        alert(val.Title + " " + val.Content + " " + val.summary[ind].sum0);
+                    });*/
+                } else if(val.target.id==d.id) {
+                   neighbors[val.source.id] = 1;
+                } else{
+
+                }
+
+            });
+            console.info(neighbors)
+
+  //change label
+
+  neighbor = g.selectAll("circle").attr("color","red");
+
+
+  alert(d.id)
+  console.info(d.parents())
   if (d3.event.defaultPrevented) return; // ignore drag
   if (d.children) {
     d._children = d.children;
