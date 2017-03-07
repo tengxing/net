@@ -146,7 +146,6 @@ function click(d) {
   neighbor = g.selectAll("circle").attr("color","red");
 
 
-  alert(d.id)
   console.info(d.parents())
   if (d3.event.defaultPrevented) return; // ignore drag
   if (d.children) {
