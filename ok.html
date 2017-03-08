@@ -84,7 +84,7 @@
 			<ul id="nodeattributes"/>
 		    <div class="name"></div>
 			<div class="data"></div>
-		    <div class="p">Connections:</div>
+		    <span>Connections:</span>
 		    <div class="link">
 		      <ul>
 		      </ul>
@@ -97,12 +97,13 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js"></script>
 
 <script>
-var nodes;
+var nodes,graph;
 var last_value =""
 var highlighted_index = 0;
 
 	d3.json("dd.json", function(error, data) {
   if (error) throw error;
+  	graph = data;
   	nodes = data.nodes;
   	d3.select("#search_input").on("keyup",showResult);
 
@@ -138,13 +139,13 @@ function showResult() {
 		return;
 	}
 
-	var search_value = str.toUpperCase();
+	var search_value = str.toLowerCase();
 
 	var max_suggestions_to_show = 10;
 	var suggestions = "";
 	var num_suggestions = 0;
 	for (var i in nodes) {
-		if (nodes[i].label.indexOf(search_value) != -1) {
+		if ((nodes[i].label.toLowerCase()).indexOf(search_value) != -1) {
 			suggestions += '<p value="' + i + '" id="select_' + num_suggestions + '" onclick="selectGene(' + i + ')">' + nodes[i].label + ""+'</p>'+"<br />";
 			num_suggestions++;
 			if (num_suggestions > max_suggestions_to_show) {
@@ -166,23 +167,89 @@ function showResult() {
 
 	last_value = str;
 }
+//find a group by id
+function findGroupById(d){
+   var groupGraph ={};
+   var nodes = eval(graph.nodes);
+   var edges = eval(graph.edges);
+   var groupNodes = [],groupEdges = [];
+   var source,target;
+   var neighbors = [];
+   //放入中心node
+   neighbors.push(d);
+             $(edges).each(function(index) {
+                var val = edges[index];
+                if (val.source.id==d) { 
+                	groupEdges.push(val);
+                  	neighbors.push(val.target.id);
+                  //alert(neighbors.length);
+                    /*$(val.summary).each(function(ind) {
+                        alert(val.Title + " " + val.Content + " " + val.summary[ind].sum0);
+                    });*/
+                } else if(val.target.id==d) {
+                   groupEdges.push(val);
+                   neighbors.push(val.source.id);
+                } else{
+
+                }
+            });
+
+             //遍历id返回nodes
+            $(neighbors).each(function(index) {
+                var id = neighbors[index];
+                $(nodes).each(function(index) {
+                	if(nodes[index].id == id){
+                		groupNodes.push(nodes[index]);
+                	}
+                });    
+            });
+
+            groupGraph = {
+                    "nodes": groupNodes,
+                    "edges": groupEdges
+                }
+            
+        return groupGraph;
+}
+
 function selectGene(index) {
+
+	var groupGraph = findGroupById(index);
+
+	 //group =update();
+
 	d3.select("#livesearch").html("");
 	d3.select("#livesearch").style("border","0px");
 	d3.select("#search_input").property("value","");
 	
+
 	var attribute;
 	var attributes = "";
-		for(var i in nodes){
-			if(nodes[i].id == index){
-				attribute = nodes[i].attributes;break;
-			}
+	for(var i in nodes){
+		if(nodes[i].id == index){
+			attribute = nodes[i].attributes;break;
 		}
+	}
 			
 		attributes += '加权度:<li value="'+attribute["加权度"]+'">'+attribute["加权度"]+'</li><br>';
-		attributes += 'Eccentricity:<li value="'+attribute.Eccentricity+'">'+attribute.Eccentricity+'</li><br>';
+		attributes += 'Modularity Class:<li value="'+attribute["Modularity Class"]+'">'+attribute["Modularity Class"]+'</li><br>';
+		attributes += 'Eccentricity:<li value="'+attribute["Eccentricity"]+'">'+attribute["Eccentricity"]+'</li><br>';
+		attributes += 'Authority:<li value="'+attribute["Authority"]+'">'+attribute["Authority"]+'</li><br>';
 		attributes += 'Weighted In-Degree:<li value="'+attribute["Weighted In-Degree"]+'">'+attribute["Weighted In-Degree"]+'</li><br>';
-		
+		attributes += 'PageRank:<li value="'+attribute["PageRank"]+'">'+attribute["PageRank"]+'</li><br>';
+		attributes += 'Harmonic Closeness Centrality:<li value="'+attribute["Harmonic Closeness Centrality"]+'">'+attribute["Harmonic Closeness Centrality"]+'</li><br>';
+		attributes += '连出度:<li value="'+attribute["连出度"]+'">'+attribute["连出度"]+'</li><br>';
+		attributes += 'Strongly-Connected ID:<li value="'+attribute["Strongly-Connected ID"]+'">'+attribute["Strongly-Connected ID"]+'</li><br>';
+		attributes += 'Weighted Out-Degree:<li value="'+attribute["Weighted Out-Degree"]+'">'+attribute["Weighted Out-Degree"]+'</li><br>';
+		attributes += 'Closeness Centrality:<li value="'+attribute["Closeness Centrality"]+'">'+attribute["Closeness Centrality"]+'</li><br>';
+		attributes += 'Hub:<li value="'+attribute["Hub"]+'">'+attribute["Hub"]+'</li><br>';
+		attributes += 'Component ID:<li value="'+attribute["Component ID"]+'">'+attribute["Component ID"]+'</li><br>';
+		attributes += 'Eigenvector Centrality:<li value="'+attribute["Eigenvector Centrality"]+'">'+attribute["Eigenvector Centrality"]+'</li><br>';
+		attributes += 'Clustering Coefficient:<li value="'+attribute["Clustering Coefficient"]+'">'+attribute["Clustering Coefficient"]+'</li><br>';
+		attributes += 'Betweenness Centrality:<li value="'+attribute["Betweenness Centrality"]+'">'+attribute["Betweenness Centrality"]+'</li><br>';
+		attributes += '连入度:<li value="'+attribute["连入度"]+'">'+attribute["连入度"]+'</li><br>';
+	
+	close();
 	d3.select("#nodeattributes").html(attributes);
 	d3.select("#attributepane").attr("style","display:block");
 
@@ -214,7 +281,12 @@ d3.json("dd.json", function(error, data) {
   if (error) throw error;
   graph = data
   
- simulation.alpha(0.01);
+  var all = update(graph);
+
+});
+
+function update(graph){
+	simulation.alpha(0.01);
 
  simulation
       .nodes(graph.nodes)
@@ -264,7 +336,7 @@ d3.json("dd.json", function(error, data) {
         .attr("cy", function(d) { return d.y; });
   }
 
-});
+}
 svg.call(d3.zoom().filter(function filter() {
   return d3.zoom().scaleTo(0.1);
 }))
@@ -345,7 +417,6 @@ function click(d) {
     d.children = d._children;
     d._children = null;
   }
-
 }
 
 </script>
