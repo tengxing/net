@@ -15,6 +15,14 @@
 		    background-position: center center;
 		    background-repeat: no-repeat;
 		}
+		.show{
+			height: 40px;
+		    width: 200px;
+		    background-color: #999999;
+		    padding-top: 10px;
+		    padding-left: 5px;
+		    font-size: 20px;
+		}
 	</style>
 </head>
 <body>
@@ -27,7 +35,9 @@
 
 <div id="mainpanel">
   <div class="col">
-		<div id="maintitle"></div>
+		<div id="maintitle">
+			<p id ="showLabel" class="show">显示label</p>
+		</div>
     <div id="title"></div>
     <div id="titletext"></div>
     <div class="info cf">
@@ -289,7 +299,20 @@ d3.json("dd.json", function(error, data) {
   
   var all = update(graph);
 
+  
+
 });
+
+
+$("#showLabel").click(function(){
+	
+	var show = d3.selectAll("text").attr("display");
+  	if(show=="none"){
+  		g.selectAll("text").style("display","block");
+  	}else{
+  		g.selectAll("text").style("display","none");
+  	}
+  });
 
 function update(graph){
 	simulation.alpha(0.01);
@@ -330,14 +353,15 @@ function update(graph){
     	.data(graph.nodes)
     	.enter()
     	.append("text")
-    	.style("fill",function(d){ return d.color; })
+    	.attr("fill",function(d){ return d.color; })
+    	.attr("display","none")
 	     .attr("dx", 20)
 	     .attr("dy", 8)
 	     .text(function(d){
 	        return d.id;
 	     });
 
-
+	  // var text = g.selectAll("text").style("display","none");
 
   link.append("title")
       .text(function(d) { return d.label; });
