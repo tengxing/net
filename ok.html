@@ -81,13 +81,11 @@
 			<span>Information Pane</span>
 		</div>	
 		<div class="nodeattributes" >
-			<ul id="nodeattributes"/>
-		    <div class="name"></div>
-			<div class="data"></div>
-		    <span>Connections:</span>
+		    
+		    <div class="p">Connections:</div>
+		    <ul id="nodeattributes"></ul> 
 		    <div class="link">
-		      <ul>
-		      </ul>
+		      <ul id="neighbors"></ul>
 		    </div>
 		</div>
 	</div>
@@ -213,7 +211,8 @@ function findGroupById(d){
 }
 
 function selectGene(index) {
-
+	var connections = [];
+	var neighbors = "";
 	var groupGraph = findGroupById(index);
 
 	 //group =update();
@@ -225,12 +224,17 @@ function selectGene(index) {
 
 	var attribute;
 	var attributes = "";
-	for(var i in nodes){
-		if(nodes[i].id == index){
-			attribute = nodes[i].attributes;break;
+	for(var i in groupGraph.nodes){
+		connections.push(groupGraph.nodes[i].label);
+		if(groupGraph.nodes[i].id == index){
+			attribute = groupGraph.nodes[i].attributes;
 		}
 	}
-			
+
+		for(var i in connections){
+			neighbors += '<a href="#'+connections[i]+'">'+connections[i]+'</a><br>';
+		}
+
 		attributes += '加权度:<li value="'+attribute["加权度"]+'">'+attribute["加权度"]+'</li><br>';
 		attributes += 'Modularity Class:<li value="'+attribute["Modularity Class"]+'">'+attribute["Modularity Class"]+'</li><br>';
 		attributes += 'Eccentricity:<li value="'+attribute["Eccentricity"]+'">'+attribute["Eccentricity"]+'</li><br>';
@@ -248,9 +252,11 @@ function selectGene(index) {
 		attributes += 'Clustering Coefficient:<li value="'+attribute["Clustering Coefficient"]+'">'+attribute["Clustering Coefficient"]+'</li><br>';
 		attributes += 'Betweenness Centrality:<li value="'+attribute["Betweenness Centrality"]+'">'+attribute["Betweenness Centrality"]+'</li><br>';
 		attributes += '连入度:<li value="'+attribute["连入度"]+'">'+attribute["连入度"]+'</li><br>';
+		
 	
 	close();
 	d3.select("#nodeattributes").html(attributes);
+	d3.select("#neighbors").html(neighbors);
 	d3.select("#attributepane").attr("style","display:block");
 
 }
@@ -299,7 +305,7 @@ function update(graph){
     .data(graph.edges)
     .enter().append("line")
     .attr("stroke",function (d) { return d.color; })
-    .attr("stroke-width", function(d) { return d.size; })
+    .attr("stroke-width", function(d) { return 4; })
     .call(d3.zoom()
         .scaleExtent([0, 2])
         .on("zoom", zoomed));
@@ -319,19 +325,22 @@ function update(graph){
       .call(d3.zoom()
         .scaleExtent([-5, 2])
         .on("zoom", zoomed));
-    var text = g.selectAll("text")
+
+	var text = g.selectAll("text")
     	.data(graph.nodes)
     	.enter()
     	.append("text")
-    	.style("fill", "black")
+    	.style("fill",function(d){ return d.color; })
 	     .attr("dx", 20)
 	     .attr("dy", 8)
 	     .text(function(d){
-	        return d.label;
+	        return d.id;
 	     });
 
-  /*node.append("title")
-      .text(function(d) { return d.label; });*/
+
+
+  link.append("title")
+      .text(function(d) { return d.label; });
 
 
   function ticked() {
@@ -348,6 +357,10 @@ function update(graph){
     text
     	.attr("x", function(d){ return d.x; })
         .attr("y", function(d){ return d.y; });
+
+    /*textlinkText
+    	.attr("x", function(d){ return d.x; })
+        .attr("y", function(d){ return d.y; });*/
   }
 
 }
