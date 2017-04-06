@@ -35,14 +35,16 @@ function init(){
 }
 
 
-
+//.force("link", d3.forceLink().distance(function(d) { return 100;}))
 function canvas(data,dom){
 	var g =dom;
 	var simulation = d3.forceSimulation()
-	    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-	    .force("charge", d3.forceManyBody())
+	    .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(10))
 	    .force("center", d3.forceCenter(width / 2, height / 2))
-	    .alpha(0.01);
+	    .force("charge", d3.forceManyBody().strength(-18).theta(0.9))
+	    .force("x", d3.forceX())
+    	.force("y", d3.forceY())
+	    .alpha(0.1);
 	simulation.nodes(data.nodes)
 			  .on("tick", ticked)
 			  .force("link")
@@ -54,7 +56,6 @@ function canvas(data,dom){
     .attr("stroke",function (d) { return d.color; })
     .attr("stroke-width", function(d) { return 4; });
     
-
     var node = g.selectAll("circle")
 	    .data(data.nodes)
 	    .enter().append("circle")
